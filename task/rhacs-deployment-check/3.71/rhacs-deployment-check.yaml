@@ -46,29 +46,55 @@ spec:
 
         When set to "true", skip verifying the TLS certs of the Central endpoint and registry.
       default: "false"
+    - name: roxctl-config-subdir
+      type: string
+      description: Path to the roxtl config directory within the roxctl-config workspace
+      default: .
   workspaces:
     - name: source
+      mountPath: /source
+    - name: roxctl-config
+      mountPath: /roxctl-config
   results:
     - name: check_output
       description: Output of `roxctl deployment check`
   steps:
+    - name: debug
+      image: centos
+      script: |
+        #!/usr/bin/env bash
+        set +x
+
+        whoami
+        echo "===== / ====="
+        ls -ld /source
+        echo "===== /* ====="
+        ls -ld /*
+        echo "===== /*/ ====="
+        ls -l /*
+        echo "===== /source ====="
+        ls -l /source
+        echo "===== /source/k8s ====="
+        ls -l /source/k8s
     - name: rox-deploy-check
       image: $(params.rox_image)
       workingDir: $(workspaces.source.path)
       env:
         - name: DEPLOYMENT
-          value: $(params.deployment)
+          value: /source/$(params.deployment)
         - name: HOME
           value: /tekton/home
         - name: INSECURE
           value: $(params.insecure-skip-tls-verify)
         - name: OUTPUT
           value: $(params.output_format)
-        - name: ROX_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.rox_api_token)
-              key: rox_api_token
+        - name: ROXCTL_CONFIG_DIR
+          value: /roxctl-config/$(params.roxctl-config-subdir)
+        #- name: ROX_API_TOKEN
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: $(params.rox_api_token)
+        #      key: rox_api_token
         - name: ROX_CENTRAL_ENDPOINT
           valueFrom:
             secretKeyRef:
@@ -81,3 +107,4 @@ spec:
         - --insecure-skip-tls-verify=$(INSECURE)
         - --output=$(OUTPUT)
         - --file=$(DEPLOYMENT)
+        - --token-file=$(ROXCTL_CONFIG_DIR)/rox_api_token

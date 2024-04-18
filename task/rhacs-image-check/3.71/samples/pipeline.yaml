@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -6,6 +7,7 @@ spec:
 
   workspaces:
     - name: shared-workspace
+    - name: roxctl-config
 
   params:
     - name: deployment-name
@@ -26,6 +28,25 @@ spec:
       description: image to be build from the code
 
   tasks:
+    - name: enable-workspace-write
+      taskRef:
+        name: enable-write-on-workspace
+        kind: Task
+      workspaces:
+        - name: workspace
+          workspace: shared-workspace
+
+    #- name: rhacs-authenticate
+    #  taskRef:
+    #    name:
+    #    kind:
+    #  params:
+    #    - name: rox_config_subdir
+    #      value: roxctl-config
+    #  workspaces:
+    #    - name: roxctl-config
+    #      workspace: shared-workspace
+
     # checkout source code
     - name: fetch-repository
       taskRef:
@@ -43,6 +64,19 @@ spec:
         value: "true"
       - name: revision
         value: $(params.git-revision)
+      runAfter:
+      - enable-workspace-write
+
+    # Ensure the checked out files can be read by other users
+    - name: enable-workspace-read
+      taskRef:
+        name: enable-read-on-workspace
+        kind: Task
+      workspaces:
+        - name: workspace
+          workspace: shared-workspace
+      runAfter:
+        - fetch-repository
 
     # validate deployment against defined  RHACS policies
     - name: police-deployment
@@ -52,13 +86,15 @@ spec:
       workspaces:
       - name: source
         workspace: shared-workspace
+      - name: roxctl-config
+        workspace: roxctl-config
       params:
       - name: deployment
         value: $(params.deployment)
       - name: insecure-skip-tls-verify
         value: "true"
       runAfter:
-      - fetch-repository
+      - enable-workspace-read
 
     - name: build-image
       taskRef:
@@ -67,17 +103,22 @@ spec:
       params:
       - name: IMAGE
         value: $(params.IMAGE)
+      - name: TLSVERIFY
+        value: "false"
       workspaces:
       - name: source
         workspace: shared-workspace
       runAfter:
-      - fetch-repository
+      - enable-workspace-read
 
     # scan image for vulns using RHACS
     - name: scan-image
       taskRef:
         name: rhacs-image-scan
         kind: Task
+      workspaces:
+      - name: roxctl-config
+        workspace: roxctl-config
       params:
       - name: image
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
@@ -91,6 +132,9 @@ spec:
       taskRef:
         name: rhacs-image-check
         kind: Task
+      workspaces:
+      - name: roxctl-config
+        workspace: roxctl-config
       params:
       - name: image
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
