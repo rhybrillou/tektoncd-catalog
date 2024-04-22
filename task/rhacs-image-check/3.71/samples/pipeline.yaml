@@ -26,27 +26,12 @@ spec:
     - name: IMAGE
       type: string
       description: image to be build from the code
+    - name: rox_central_endoint
+      type: string
+      description: The address:port tuple for RHACS Stackrox Central.
+      default: central.stackrox.svc:443
 
   tasks:
-    - name: enable-workspace-write
-      taskRef:
-        name: enable-write-on-workspace
-        kind: Task
-      workspaces:
-        - name: workspace
-          workspace: shared-workspace
-
-    #- name: rhacs-authenticate
-    #  taskRef:
-    #    name:
-    #    kind:
-    #  params:
-    #    - name: rox_config_subdir
-    #      value: roxctl-config
-    #  workspaces:
-    #    - name: roxctl-config
-    #      workspace: shared-workspace
-
     # checkout source code
     - name: fetch-repository
       taskRef:
@@ -64,19 +49,6 @@ spec:
         value: "true"
       - name: revision
         value: $(params.git-revision)
-      runAfter:
-      - enable-workspace-write
-
-    # Ensure the checked out files can be read by other users
-    - name: enable-workspace-read
-      taskRef:
-        name: enable-read-on-workspace
-        kind: Task
-      workspaces:
-        - name: workspace
-          workspace: shared-workspace
-      runAfter:
-        - fetch-repository
 
     # validate deployment against defined  RHACS policies
     - name: police-deployment
@@ -94,7 +66,7 @@ spec:
       - name: insecure-skip-tls-verify
         value: "true"
       runAfter:
-      - enable-workspace-read
+      - fetch-repository
 
     - name: build-image
       taskRef:
@@ -109,7 +81,7 @@ spec:
       - name: source
         workspace: shared-workspace
       runAfter:
-      - enable-workspace-read
+      - fetch-repository
 
     # scan image for vulns using RHACS
     - name: scan-image

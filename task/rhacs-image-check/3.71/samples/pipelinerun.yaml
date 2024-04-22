@@ -2,11 +2,11 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: rox-pipelinerun-10
+  name: rox-pipelinerun
 spec:
   serviceAccountName: build-bot
   pipelineRef:
-    name: rox-pipeline
+    name: rox-pipeline-with-secret
   params:
   - name: deployment-name
     value: pipelines-vote-api

@@ -2,11 +2,11 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: rox-pipelinerun
+  name: rox-pipelinerun-with-m2m-1
 spec:
   serviceAccountName: build-bot
   pipelineRef:
-    name: rox-pipeline-with-secret
+    name: rox-pipeline-with-m2m
   params:
   - name: deployment-name
     value: pipelines-vote-api
@@ -29,6 +29,6 @@ spec:
         resources:
           requests:
             storage: 500Mi
-  - name: roxctl-config
-    secret:
-      secretName: rox-api-token
+  #- name: roxctl-config
+  #  secret:
+  #    secretName: rox-api-token

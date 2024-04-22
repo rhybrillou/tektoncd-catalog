@@ -22,12 +22,12 @@ spec:
   params:
     - name: rox_central_endpoint
       type: string
-      description: Name of secret containing the address:port tuple for RHACS Stackrox Central.
-      default: rox-central-endpoint
-    - name: rox_api_token
-      type: string
-      description: Name of secret containing the RHACS StackRox API token with CI permissions.
-      default: rox-api-token
+      description: The address:port tuple for RHACS Stackrox Central.
+      default: central.stackrox.svc:443
+    #- name: rox_api_token
+    #  type: string
+    #  description: Name of secret containing the RHACS StackRox API token with CI permissions.
+    #  default: rox-api-token
     - name: rox_image
       description: Image providing the roxctl tool.
       default: quay.io/stackrox-io/roxctl:3.71.0
@@ -52,6 +52,10 @@ spec:
       type: string
       description: Path to the roxtl config directory within the roxctl-config workspace
       default: .
+    - name: token_file
+      description: Name of the file where the obtained token should reside (relative to $(workspaces.roxctl-config)/$(params.roxctl_config_subdir)).
+      type: string
+      default: rox_api_token
   workspaces:
     - name: roxctl-config
       mountPath: /roxctl-config
@@ -70,18 +74,21 @@ spec:
           value: $(params.insecure-skip-tls-verify)
         - name: OUTPUT
           value: $(params.output_format)
-        - name: ROXCTL_CONFIG_DIR
-          value: /roxctl-config/$(params.roxctl-config-subdir)
         #- name: ROX_API_TOKEN
         #  valueFrom:
         #    secretKeyRef:
         #      name: $(params.rox_api_token)
         #      key: rox_api_token
+        - name: ROXCTL_CONFIG_DIR
+          value: /roxctl-config/$(params.roxctl-config-subdir)
+        - name: ROX_TOKEN_FILE
+          value: $(params.token_file)
         - name: ROX_CENTRAL_ENDPOINT
-          valueFrom:
-            secretKeyRef:
-              name: $(params.rox_central_endpoint)
-              key: rox_central_endpoint
+          value: $(params.rox_central_endpoint)
+          #valueFrom:
+          #  secretKeyRef:
+          #    name: $(params.rox_central_endpoint)
+          #    key: rox_central_endpoint
       args:
         - image
         - check
@@ -89,4 +96,4 @@ spec:
         - --insecure-skip-tls-verify=$(INSECURE)
         - --output=$(OUTPUT)
         - --image=$(IMAGE)
-        - --token-file=$(ROXCTL_CONFIG_DIR)/rox_api_token
+        - --token-file=$(ROXCTL_CONFIG_DIR)/$(ROX_TOKEN_FILE)

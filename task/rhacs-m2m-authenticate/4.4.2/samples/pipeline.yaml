@@ -2,12 +2,12 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: rox-pipeline
+  name: rox-pipeline-with-m2m
 spec:
 
   workspaces:
     - name: shared-workspace
-    - name: roxctl-config
+    #- name: roxctl-config
 
   params:
     - name: deployment-name
@@ -32,6 +32,31 @@ spec:
       default: central.stackrox.svc:443
 
   tasks:
+    - name: enable-workspace-write
+      taskRef:
+        name: enable-write-on-workspace
+        kind: Task
+      workspaces:
+        - name: workspace
+          workspace: shared-workspace
+
+    - name: rhacs-authenticate
+      taskRef:
+        name: rhacs-m2m-exchange
+        kind: Task
+      params:
+        - name: insecure-skip-tls-verify
+          value: "true"
+        - name: rox_config_subdir
+          value: roxctl-config
+        - name: rox_token_file
+          value: rox_api_token
+      workspaces:
+        - name: roxctl-config
+          workspace: shared-workspace
+      runAfter:
+      - enable-workspace-write
+
     # checkout source code
     - name: fetch-repository
       taskRef:
@@ -49,6 +74,19 @@ spec:
         value: "true"
       - name: revision
         value: $(params.git-revision)
+      runAfter:
+      - rhacs-authenticate
+
+    ## Ensure the checked out files can be read by other users
+    #- name: enable-workspace-read
+    #  taskRef:
+    #    name: enable-read-on-workspace
+    #    kind: Task
+    #  workspaces:
+    #    - name: workspace
+    #      workspace: shared-workspace
+    #  runAfter:
+    #    - fetch-repository
 
     # validate deployment against defined  RHACS policies
     - name: police-deployment
@@ -59,12 +97,16 @@ spec:
       - name: source
         workspace: shared-workspace
       - name: roxctl-config
-        workspace: roxctl-config
+        workspace: shared-workspace
       params:
       - name: deployment
         value: $(params.deployment)
       - name: insecure-skip-tls-verify
         value: "true"
+      - name: roxctl-config-subdir
+        value: roxctl-config
+      - name: rox_token_file
+        value: rox_api_token
       runAfter:
       - fetch-repository
 
@@ -90,12 +132,16 @@ spec:
         kind: Task
       workspaces:
       - name: roxctl-config
-        workspace: roxctl-config
+        workspace: shared-workspace
       params:
       - name: image
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
       - name: insecure-skip-tls-verify
         value: "true" # stackrox to OCP image registry x509 fail...
+      - name: roxctl-config-subdir
+        value: roxctl-config
+      - name: rox_token_file
+        value: rox_api_token
       runAfter:
       - build-image
 
@@ -106,11 +152,15 @@ spec:
         kind: Task
       workspaces:
       - name: roxctl-config
-        workspace: roxctl-config
+        workspace: shared-workspace
       params:
       - name: image
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
       - name: insecure-skip-tls-verify
         value: "true"
+      - name: roxctl-config-subdir
+        value: roxctl-config
+      - name: rox_token_file
+        value: rox_api_token
       runAfter:
       - scan-image

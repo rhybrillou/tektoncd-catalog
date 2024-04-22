@@ -1,0 +1,105 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: rhacs-m2m-exchange
+  labels:
+    apps.kubernetes.io/version: "4.5"
+  annotations:
+    tekton.dev/tags: security
+    tekton.dev/categories: Security
+    tekton.dev/displayName: "Exchange a service account token for a Red Hat Advanced Cluster Security short-lived token"
+    tekton.dev/platforms: "linux/amd64"
+    tekton.dev/pipelines.minVersion: "0.18.0"
+spec:
+  description: >-
+    Exchanges a kubernetes service account token against a Red Hat Advanced Cluster Security short-lived token.
+
+    This task allows you to fetch a Red Hat Advanced Cluster Security token for use in other `rhacs-*` tasks.
+  workspaces:
+    - name: roxctl-config
+      mountPath: /roxctl-config
+  params:
+    - name: rox_central_endpoint
+      description: The address:port tuple for RHACS Stackrox Central.
+      type: string
+      default: central.stackrox.svc:443
+    - name: insecure-skip-tls-verify
+      description: |
+        Do not verify TLS certificates.
+
+        When set to "true", skip verifying the TLS certs of the Central endpoint and registry.
+      type: string
+      default: "false"
+    - name: roxctl-config-subdir
+      description: Path to the directory within $(workspaces.roxctl-config) where the roxctl access config should live.
+      type: string
+      default: roxctl-config
+    - name: token_file
+      description: Name of the file where the obtained token should reside (relative to $(workspaces.roxctl-config)/$(params.roxctl_config_subdir)).
+      type: string
+      default: rox_api_token
+  stepTemplate:
+    env:
+      - name: HOME
+        value: /tekon/home
+      - name: INSECURE
+        value: $(params.insecure-skip-tls-verify)
+      - name: ROX_CENTRAL_ENDPOINT
+        value: $(params.rox_central_endpoint)
+      - name: ROX_CONFIG_DIR
+        value: /roxctl-config/$(params.roxctl-config-subdir)
+  steps:
+    - name: ensure-config-dir-exists
+      image: bash:latest
+      volumeMounts:
+        - name: token-vol
+          mountPath: /service-account-token
+      script: |
+        #!/usr/bin/env bash
+        set +x
+        mkdir -p ${ROX_CONFIG_DIR}
+        chmod 1777 ${ROX_CONFIG_DIR}
+        #cat /service-account-token/token
+    - name: exchange-service-account-token
+      image: 'quay.io/stackrox-io/roxctl:4.4.x-376-g3a3364f8d6'
+      volumeMounts:
+        - name: token-vol
+          mountPath: /service-account-token
+      args:
+        - central
+        - m2m
+        - exchange
+        - --endpoint=$(ROX_CENTRAL_ENDPOINT)
+        - --insecure-skip-tls-verify=$(INSECURE)
+        - --token-file=/service-account-token/token
+    - name: copy-exchanged-token
+      image: python:latest
+      env:
+        - name: ROX_TOKEN_FILE
+          value: $(params.token_file)
+      script: |
+        #!/usr/bin/env bash
+        cat > pull_exchanged_token.py << EOF
+        import yaml
+        with open('${ROX_CONFIG_DIR}/roxctl-config.yaml') as config_file:
+          config = yaml.safe_load(config_file)
+        central_config = config['centrals']['${ROX_CENTRAL_ENDPOINT}']
+        token = central_config['access']['accessToken']
+        # Use the workspace to pass the short-lived token
+        with open('${ROX_CONFIG_DIR}/${ROX_TOKEN_FILE}', 'w') as output:
+          output.write(token)
+        EOF
+
+        pip install pyyaml 2>/dev/null >/dev/null
+
+        python pull_exchanged_token.py
+  volumes:
+    - name: token-vol
+      projected:
+        sources:
+          - serviceAccountToken:
+              audience: rhacs
+              path: token
+              expirationSeconds: 3600
+
