@@ -77,17 +77,6 @@ spec:
       runAfter:
       - rhacs-authenticate
 
-    ## Ensure the checked out files can be read by other users
-    #- name: enable-workspace-read
-    #  taskRef:
-    #    name: enable-read-on-workspace
-    #    kind: Task
-    #  workspaces:
-    #    - name: workspace
-    #      workspace: shared-workspace
-    #  runAfter:
-    #    - fetch-repository
-
     # validate deployment against defined  RHACS policies
     - name: police-deployment
       taskRef:

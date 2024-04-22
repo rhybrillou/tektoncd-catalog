@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccountName: build-bot
   pipelineRef:
-    name: rox-pipeline-with-secret
+    name: rox-pipeline
   params:
   - name: deployment-name
     value: pipelines-vote-api

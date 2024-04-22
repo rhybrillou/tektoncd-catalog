@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: rox-pipelinerun-with-m2m-1
+  name: rox-pipelinerun-with-m2m
 spec:
   serviceAccountName: build-bot
   pipelineRef:

@@ -57,10 +57,8 @@ spec:
           mountPath: /service-account-token
       script: |
         #!/usr/bin/env bash
-        set +x
         mkdir -p ${ROX_CONFIG_DIR}
         chmod 1777 ${ROX_CONFIG_DIR}
-        #cat /service-account-token/token
     - name: exchange-service-account-token
       image: 'quay.io/stackrox-io/roxctl:4.4.x-376-g3a3364f8d6'
       volumeMounts:

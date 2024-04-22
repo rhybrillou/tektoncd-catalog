@@ -56,7 +56,6 @@ spec:
       default: rox_api_token
   workspaces:
     - name: source
-      mountPath: /source
     - name: roxctl-config
       mountPath: /roxctl-config
   results:
@@ -68,7 +67,7 @@ spec:
       workingDir: $(workspaces.source.path)
       env:
         - name: DEPLOYMENT
-          value: /source/$(params.deployment)
+          value: $(params.deployment)
         - name: HOME
           value: /tekton/home
         - name: INSECURE
