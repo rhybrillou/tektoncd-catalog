@@ -29,6 +29,6 @@ spec:
         resources:
           requests:
             storage: 500Mi
-  - name: roxctl-config
+  - name: rox-api-token-auth
     secret:
       secretName: rox-api-token

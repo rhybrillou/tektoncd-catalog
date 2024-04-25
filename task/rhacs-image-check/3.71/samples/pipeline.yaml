@@ -7,7 +7,7 @@ spec:
 
   workspaces:
     - name: shared-workspace
-    - name: roxctl-config
+    - name: rox-api-token-auth
 
   params:
     - name: deployment-name
@@ -30,6 +30,14 @@ spec:
       type: string
       description: The address:port tuple for RHACS Stackrox Central.
       default: central.stackrox.svc:443
+    - name: rox_token_file
+      type: string
+      description: The location of the ROX API token file
+      default: /rox-api-token-auth/rox_api_token
+    - name: rox_image
+      type: string
+      description: The Red Hat Advanced Cluster Security container image
+      default: quay.io/stackrox-io/roxctl:4.4.x-496-g60accbcf23
 
   tasks:
     # checkout source code
@@ -58,13 +66,17 @@ spec:
       workspaces:
       - name: source
         workspace: shared-workspace
-      - name: roxctl-config
-        workspace: roxctl-config
+      - name: rox-api-token-auth
+        workspace: rox-api-token-auth
       params:
       - name: deployment
         value: $(params.deployment)
       - name: insecure-skip-tls-verify
         value: "true"
+      - name: rox_token_file
+        value: $(params.rox_token_file)
+      - name: rox_image
+        value: $(params.rox_image)
       runAfter:
       - fetch-repository
 
@@ -89,13 +101,17 @@ spec:
         name: rhacs-image-scan
         kind: Task
       workspaces:
-      - name: roxctl-config
-        workspace: roxctl-config
+      - name: rox-api-token-auth
+        workspace: rox-api-token-auth
       params:
       - name: image
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
       - name: insecure-skip-tls-verify
         value: "true" # stackrox to OCP image registry x509 fail...
+      - name: rox_token_file
+        value: $(params.rox_token_file)
+      - name: rox_image
+        value: $(params.rox_image)
       runAfter:
       - build-image
 
@@ -105,12 +121,16 @@ spec:
         name: rhacs-image-check
         kind: Task
       workspaces:
-      - name: roxctl-config
-        workspace: roxctl-config
+      - name: rox-api-token-auth
+        workspace: rox-api-token-auth
       params:
       - name: image
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
       - name: insecure-skip-tls-verify
         value: "true"
+      - name: rox_token_file
+        value: $(params.rox_token_file)
+      - name: rox_image
+        value: $(params.rox_image)
       runAfter:
       - scan-image

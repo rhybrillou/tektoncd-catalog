@@ -2,12 +2,11 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: rox-pipeline-with-m2m
+  name: rox-pipeline
 spec:
 
   workspaces:
     - name: shared-workspace
-    #- name: roxctl-config
 
   params:
     - name: deployment-name
@@ -30,16 +29,16 @@ spec:
       type: string
       description: The address:port tuple for RHACS Stackrox Central.
       default: central.stackrox.svc:443
+    - name: rox_config_dir
+      type: string
+      description: The path to the roxctl configuration directory
+      default: /roxctl-config
+    - name: rox_image
+      type: string
+      description: The Red Hat Advanced Cluster Security container image
+      default: quay.io/stackrox-io/roxctl:4.4.x-496-g60accbcf23
 
   tasks:
-    - name: enable-workspace-write
-      taskRef:
-        name: enable-write-on-workspace
-        kind: Task
-      workspaces:
-        - name: workspace
-          workspace: shared-workspace
-
     - name: rhacs-authenticate
       taskRef:
         name: rhacs-m2m-exchange
@@ -47,15 +46,11 @@ spec:
       params:
         - name: insecure-skip-tls-verify
           value: "true"
-        - name: rox_config_subdir
-          value: roxctl-config
-        - name: rox_token_file
-          value: rox_api_token
+        - name: rox_config_dir
+          value: $(params.rox_config_dir)
       workspaces:
         - name: roxctl-config
           workspace: shared-workspace
-      runAfter:
-      - enable-workspace-write
 
     # checkout source code
     - name: fetch-repository
@@ -92,10 +87,10 @@ spec:
         value: $(params.deployment)
       - name: insecure-skip-tls-verify
         value: "true"
-      - name: roxctl-config-subdir
-        value: roxctl-config
-      - name: rox_token_file
-        value: rox_api_token
+      - name: rox_config_dir
+        value: $(params.rox_config_dir)
+      - name: rox_image
+        value: $(params.rox_image)
       runAfter:
       - fetch-repository
 
@@ -127,10 +122,10 @@ spec:
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
       - name: insecure-skip-tls-verify
         value: "true" # stackrox to OCP image registry x509 fail...
-      - name: roxctl-config-subdir
-        value: roxctl-config
-      - name: rox_token_file
-        value: rox_api_token
+      - name: rox_config_dir
+        value: $(params.rox_config_dir)
+      - name: rox_image
+        value: $(params.rox_image)
       runAfter:
       - build-image
 
@@ -147,9 +142,9 @@ spec:
         value: "$(params.IMAGE)@$(tasks.build-image.results.IMAGE_DIGEST)"
       - name: insecure-skip-tls-verify
         value: "true"
-      - name: roxctl-config-subdir
-        value: roxctl-config
-      - name: rox_token_file
-        value: rox_api_token
+      - name: rox_config_dir
+        value: $(params.rox_config_dir)
+      - name: rox_image
+        value: $(params.rox_image)
       runAfter:
       - scan-image

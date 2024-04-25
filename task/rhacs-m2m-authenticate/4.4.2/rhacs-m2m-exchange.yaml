@@ -20,6 +20,9 @@ spec:
     - name: roxctl-config
       mountPath: /roxctl-config
   params:
+    - name: rox_image
+      description: Image providing the roxctl tool.
+      default: 'quay.io/stackrox-io/roxctl:4.4.x-376-g3a3364f8d6'
     - name: rox_central_endpoint
       description: The address:port tuple for RHACS Stackrox Central.
       type: string
@@ -31,36 +34,25 @@ spec:
         When set to "true", skip verifying the TLS certs of the Central endpoint and registry.
       type: string
       default: "false"
-    - name: roxctl-config-subdir
-      description: Path to the directory within $(workspaces.roxctl-config) where the roxctl access config should live.
+    - name: rox_config_dir
       type: string
-      default: roxctl-config
-    - name: token_file
-      description: Name of the file where the obtained token should reside (relative to $(workspaces.roxctl-config)/$(params.roxctl_config_subdir)).
-      type: string
-      default: rox_api_token
+      description: |
+        Path to the roxtl config directory within the roxctl-config workspace.
+        The path should be prefixed with /roxctl-config .
+      default: ""
   stepTemplate:
     env:
       - name: HOME
         value: /tekon/home
       - name: INSECURE
         value: $(params.insecure-skip-tls-verify)
-      - name: ROX_CENTRAL_ENDPOINT
+      - name: ROX_ENDPOINT
         value: $(params.rox_central_endpoint)
       - name: ROX_CONFIG_DIR
-        value: /roxctl-config/$(params.roxctl-config-subdir)
+        value: $(params.rox_config_dir)
   steps:
-    - name: ensure-config-dir-exists
-      image: bash:latest
-      volumeMounts:
-        - name: token-vol
-          mountPath: /service-account-token
-      script: |
-        #!/usr/bin/env bash
-        mkdir -p ${ROX_CONFIG_DIR}
-        chmod 1777 ${ROX_CONFIG_DIR}
     - name: exchange-service-account-token
-      image: 'quay.io/stackrox-io/roxctl:4.4.x-376-g3a3364f8d6'
+      image: $(params.rox_image)
       volumeMounts:
         - name: token-vol
           mountPath: /service-account-token
@@ -68,30 +60,8 @@ spec:
         - central
         - m2m
         - exchange
-        - --endpoint=$(ROX_CENTRAL_ENDPOINT)
         - --insecure-skip-tls-verify=$(INSECURE)
         - --token-file=/service-account-token/token
-    - name: copy-exchanged-token
-      image: python:latest
-      env:
-        - name: ROX_TOKEN_FILE
-          value: $(params.token_file)
-      script: |
-        #!/usr/bin/env bash
-        cat > pull_exchanged_token.py << EOF
-        import yaml
-        with open('${ROX_CONFIG_DIR}/roxctl-config.yaml') as config_file:
-          config = yaml.safe_load(config_file)
-        central_config = config['centrals']['${ROX_CENTRAL_ENDPOINT}']
-        token = central_config['access']['accessToken']
-        # Use the workspace to pass the short-lived token
-        with open('${ROX_CONFIG_DIR}/${ROX_TOKEN_FILE}', 'w') as output:
-          output.write(token)
-        EOF
-
-        pip install pyyaml 2>/dev/null >/dev/null
-
-        python pull_exchanged_token.py
   volumes:
     - name: token-vol
       projected:
