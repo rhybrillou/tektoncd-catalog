@@ -4,7 +4,6 @@ kind: PipelineRun
 metadata:
   name: rox-pipelinerun
 spec:
-  serviceAccountName: build-bot
   pipelineRef:
     name: rox-pipeline
   params:
@@ -29,6 +28,3 @@ spec:
         resources:
           requests:
             storage: 500Mi
-  - name: rox-api-token-auth
-    secret:
-      secretName: rox-api-token

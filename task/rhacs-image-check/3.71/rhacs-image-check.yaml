@@ -9,7 +9,7 @@ metadata:
     tekton.dev/tags: security
     tekton.dev/categories: Security
     tekton.dev/displayName: "Policy check an image with Red Hat Advanced Cluster Security"
-    tekton.dev/platforms: "linux/amd64"
+    tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,darwin/amd64,darwin/arm64,windows/amd64"
     tekton.dev/pipelines.minVersion: "0.18.0"
 spec:
   description: >-
@@ -49,22 +49,32 @@ spec:
       description: |
         Path to the roxtl config directory within the roxctl-config workspace (if machine to machine authentication is used).
         Mutually exclusive with token_file.
-        The path should be prefixed with /roxctl-config .
+        The path should be prefixed with "/roxctl-config".
       default: ""
     - name: rox_token_file
       description: |
         Path to the API Token file (if authentication through API token).
         Mutually exclusive with rox_config_dir.
-        The path should be prefixed with /rox-api-auth-token .
-        Example /rox-api-auth-token/rox_api_token
+        The path should be prefixed with "/rox-api-auth-token".
+        Example "/rox-api-auth-token/rox_api_token"
       type: string
       default: ""
   workspaces:
     - name: roxctl-config
+      description: |
+        A workspace containing the configuration for roxctl. Used to authenticate with the remote central using short-lived tokens.
+        Mutually exclusive with rox-api-token-auth workspace.
+        The workspace is ideally populated by a rhacs-m2m-authenticate TaskRun.
       optional: true
+      readOnly: true
       mountPath: /roxctl-config
     - name: rox-api-token-auth
+      description: |
+        A workspace containing a rox token file. Used to authenticate with the remote central.
+        Mutually exclusive with roxctl-config.
+        It is strongly recommended that this workspace be bound to a Kubernetes secret.
       optional: true
+      readOnly: true
       mountPath: /rox-api-token-auth
   results:
     - name: check_output

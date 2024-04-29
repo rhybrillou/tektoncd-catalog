@@ -4,20 +4,21 @@ kind: Task
 metadata:
   name: rhacs-m2m-exchange
   labels:
-    apps.kubernetes.io/version: "4.5"
+    apps.kubernetes.io/version: "0.1"
   annotations:
     tekton.dev/tags: security
     tekton.dev/categories: Security
     tekton.dev/displayName: "Exchange a service account token for a Red Hat Advanced Cluster Security short-lived token"
-    tekton.dev/platforms: "linux/amd64"
+    tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,darwin/amd64,darwin/arm64,windows/amd64"
     tekton.dev/pipelines.minVersion: "0.18.0"
 spec:
   description: >-
     Exchanges a kubernetes service account token against a Red Hat Advanced Cluster Security short-lived token.
-
-    This task allows you to fetch a Red Hat Advanced Cluster Security token for use in other `rhacs-*` tasks.
   workspaces:
     - name: roxctl-config
+      description: |
+        A workspace containing the configuration for roxctl.
+        The task will update the access config for the target central with a short-lived token obtained from the remote central.
       mountPath: /roxctl-config
   params:
     - name: rox_image
@@ -38,12 +39,10 @@ spec:
       type: string
       description: |
         Path to the roxtl config directory within the roxctl-config workspace.
-        The path should be prefixed with /roxctl-config .
+        The path should be prefixed with "/roxctl-config".
       default: ""
   stepTemplate:
     env:
-      - name: HOME
-        value: /tekon/home
       - name: INSECURE
         value: $(params.insecure-skip-tls-verify)
       - name: ROX_ENDPOINT

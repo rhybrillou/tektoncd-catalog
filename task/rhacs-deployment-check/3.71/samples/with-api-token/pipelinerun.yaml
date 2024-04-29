@@ -4,7 +4,6 @@ kind: PipelineRun
 metadata:
   name: rox-pipelinerun
 spec:
-  serviceAccountName: build-bot
   pipelineRef:
     name: rox-pipeline
   params:
@@ -18,6 +17,8 @@ spec:
     value: pipelines-1.7
   - name: IMAGE
     value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/pipelines-vote-ui
+  - name: TLSVERIFY
+    value: "false"
   - name: insecure-skip-tls-verify
     value: "true"
   workspaces:
@@ -29,3 +30,6 @@ spec:
         resources:
           requests:
             storage: 500Mi
+  - name: rox-api-token-auth
+    secret:
+      secretName: rox-api-token
