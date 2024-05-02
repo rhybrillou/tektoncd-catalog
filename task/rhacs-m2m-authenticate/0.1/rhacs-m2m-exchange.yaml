@@ -32,7 +32,7 @@ spec:
       description: |
         Do not verify TLS certificates.
 
-        When set to "true", skip verifying the TLS certs of the Central endpoint and registry.
+        When set to "true", skip verifying the TLS certs of the Central endpoint.
       type: string
       default: "false"
     - name: rox_config_dir

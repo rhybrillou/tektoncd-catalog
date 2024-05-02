@@ -4,7 +4,7 @@ kind: Task
 metadata:
   name: rhacs-deployment-check
   labels:
-    app.kubernetes.io/version: "3.71"
+    app.kubernetes.io/version: "4.0"
   annotations:
     tekton.dev/tags: security
     tekton.dev/categories: Security
@@ -24,7 +24,7 @@ spec:
       default: central.stackrox.svc:443
     - name: rox_image
       description: Image providing the roxctl tool.
-      default: quay.io/stackrox-io/roxctl:3.71.0
+      default: quay.io/stackrox-io/roxctl:4.4.2
     - name: deployment
       type: string
       description: |
@@ -53,8 +53,8 @@ spec:
       description: |
         Path to the API Token file (if authentication through API token).
         Mutually exclusive with rox_config_dir.
-        The path should be prefixed with "/rox-api-auth-token".
-        Example "/rox-api-auth-token/rox_api_token"
+        The path should be prefixed with "/rox-api-token-auth".
+        Example "/rox-api-token-auth/rox_api_token"
       type: string
       default: ""
   workspaces:

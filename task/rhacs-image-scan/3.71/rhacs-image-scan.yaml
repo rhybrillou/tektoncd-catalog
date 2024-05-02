@@ -56,8 +56,8 @@ spec:
       description: |
         Path to the API Token file (if authentication through API token).
         Mutually exclusive with rox_config_dir.
-        The path should be prefixed with "/rox-api-auth-token".
-        Example "/rox-api-auth-token/rox_api_token"
+        The path should be prefixed with "/rox-api-token-auth".
+        Example "/rox-api-token-auth/rox_api_token"
       type: string
       default: ""
   workspaces:
