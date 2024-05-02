@@ -38,6 +38,8 @@ One of the **`rox_config_dir`** or **`rox_token_file`** parameter is required fo
 
 Configure machine to machine authentication or create secrets for authentication to RHACS Central endpoint and supply filesystem path to deployment manifest for checking.
 
+**Note:** This task requires at least Read permission on the Detection resource configured on RHACS Central side.
+
 Run this task after rhacs-image-scan to ensure most up to date CVE data for images referenced by the deployment.
 
 If the deployment violates one or more enforced policies, this task will return a failure and cause the pipeline run to fail. 
