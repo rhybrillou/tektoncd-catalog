@@ -49,6 +49,8 @@ spec:
         value: $(params.rox_central_endpoint)
       - name: ROX_CONFIG_DIR
         value: $(params.rox_config_dir)
+      - name: ROX_EXECUTION_ENV
+        value: Tekton
   steps:
     - name: exchange-service-account-token
       image: $(params.rox_image)
