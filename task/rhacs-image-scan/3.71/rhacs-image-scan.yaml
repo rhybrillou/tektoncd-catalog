@@ -1,4 +1,5 @@
-apiVersion: tekton.dev/v1
+---
+apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: rhacs-image-scan
@@ -24,15 +25,11 @@ spec:
       default: rox-central-endpoint
     - name: rox_api_token
       type: string
-      description: |
-        Name of secret containing the RHACS StackRox API token with CI permissions.
-        Leave empty if you use another authentication mechanism.
-        Example: rox-api-token.
-      default: ""
+      description: Name of secret containing the RHACS StackRox API token with CI permissions.
+      default: rox-api-token
     - name: rox_image
-      type: string
       description: Image providing the roxctl tool.
-      default: 'quay.io/stackrox-io/roxctl:4.4.x-376-g3a3364f8d6'
+      default: quay.io/stackrox-io/roxctl:3.71.0
     - name: image
       type: string
       description: |
@@ -43,20 +40,8 @@ spec:
       default: '$(params.IMAGE)'
     - name: output_format
       type: string
-      description: Results output format (json | csv | table).
+      description: Results output format (json | csv | table)
       default: json
-    - name: output_file
-      type: string
-      description: |
-        Path to a file where to write the roxctl standard output stream.
-        If empty, the output stream goes to the container standard output.
-      default: ""
-    - name: error_file
-      type: string
-      description: |
-        Path to a file where to write the roxctl standard error stream.
-        If empty, the error stream goes to the container standard error.
-      default: ""
     - name: insecure-skip-tls-verify
       type: string
       description: |
@@ -64,60 +49,28 @@ spec:
 
         When set to "true", skip verifying the TLS certs of the Central endpoint and registry.
       default: "false"
-  volumes:
-    - name: token-vol
-      projected:
-        sources:
-          - serviceAccountToken:
-              audience: rhacs
-              expirationSeconds: 3600
-              path: token
-  workspaces:
-    - name: roxctl-config
-      description: The folder where the roxctl config should be stored.
-      mountPath: /roxctl-config
-  stepTemplate:
-    env:
-      - name: HOME
-        value: /tekton/home
-      - name: INSECURE
-        value: $(params.insecure-skip-tls-verify)
-      - name: ROX_CONFIG_DIR
-        value: $(workspaces.roxctl-config.path)
-      - name: ROX_CENTRAL_ENDPOINT
-        valueFrom:
-          secretKeyRef:
-            key: rox_central_endpoint
-            name: $(params.rox_central_endpoint)
-      - name: ROX_OUTPUT_FILE
-        value: $(params.output_file)
-      - name: ROX_ERROR_FILE
-        value: $(params.error_file)
   steps:
-    - name: extract-serviceaccount-token
-      image: $(params.rox_image)
-      volumeMounts:
-        - mountPath: /service-account-token
-          name: token-vol
-      args:
-        - central
-        - m2m
-        - exchange
-        - --endpoint=$(ROX_CENTRAL_ENDPOINT)
-        - --insecure-skip-tls-verify=$(INSECURE)
-        - --token-file=/service-account-token/token
     - name: rox-image-scan
       image: $(params.rox_image)
       env:
+        - name: HOME
+          value: /tekton/home
         - name: IMAGE
           value: $(params.image)
+        - name: INSECURE
+          value: $(params.insecure-skip-tls-verify)
         - name: OUTPUT
           value: $(params.output_format)
-        #- name: ROX_API_TOKEN
-        #  valueFrom:
-        #    secretKeyRef:
-        #      name: $(params.rox_api_token)
-        #      key: rox_api_token
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.rox_api_token)
+              key: rox_api_token
+        - name: ROX_CENTRAL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: $(params.rox_central_endpoint)
+              key: rox_central_endpoint
       args:
         - image
         - scan
