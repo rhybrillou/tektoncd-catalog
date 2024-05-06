@@ -1,4 +1,4 @@
-##Configure RHACS Central to trust the OIDC ID tokens
+## Configure RHACS Central to trust the OIDC ID tokens
 
 The first step is to configure RHACS to trust tokens issued by the OIDC provider and mapping claims to specific roles within Central.
 
