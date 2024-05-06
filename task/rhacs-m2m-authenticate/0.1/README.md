@@ -1,6 +1,8 @@
 # Red Hat Advanced Cluster Security Deployment Check Task
 
-Exchanges a service account token against a short-lived authorization token to configure a pipeline run using `roxctl`.
+Exchanges a service account token against a short-lived RHACS authorization token to configure a pipeline run using `roxctl`.
+
+**Note: this Task requires a 4.4.2 roxctl image (task default) or a more recent image version.**
 
 ## Prerequisites
 
@@ -64,5 +66,3 @@ The task configuration in that case should provide the `roxctl-config` workspace
 # Known Issues
 
 * Skipping TLS Verify is currently required.
-
-* Version of roxctl should maintain compatibility with Central API. Maximum allowable version drift is unknown.

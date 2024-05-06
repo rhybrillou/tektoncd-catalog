@@ -4,6 +4,8 @@ Check a deployment manifest against RHACS deploy lifecycle policies to validate 
 
 **Note: this Task is not backwards compatible with the `3.71` versions as it changes the parameters and token configuration.**
 
+**Note: this Task requires a 4.4.2 roxctl image (task default) or a more recent image version.**
+
 ## Prerequisites
 
 This task requires an active installation of [Red Hat Advanced Cluster Security (RHACS)](https://www.redhat.com/en/resources/advanced-cluster-security-for-kubernetes-datasheet) or [StackRox](https://www.stackrox.io).  It also requires configuration of an authorization token with at least CI privileges.
@@ -34,7 +36,7 @@ One of the **`rox_config_dir`** or **`rox_token_file`** parameter is required fo
 ## Workspaces
 
 - **source**: A [Workspace](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md) containing the deployment manifest.
-- **roxctl-config**: An [optional workspace](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#optional-workspaces) containing the configuration for roxctl. Used to authenticate with the remote central using short-lived tokens. The content of this worksapce is ideally populated by a rhacs-m2m-authenticate TaskRun. This workspace is mutually exclusive with the `rox-api-token-auth` workspace.
+- **roxctl-config**: An [optional workspace](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#optional-workspaces) containing the configuration for roxctl. Used to authenticate with the remote central using short-lived tokens. The content of this workspace has to be populated by a rhacs-m2m-authenticate TaskRun. This workspace is mutually exclusive with the `rox-api-token-auth` workspace.
 - **rox-api-token-auth**: An [optional workspace](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#optional-workspaces) containing a rox token file. Used to authenticate with the remote central. It is **strongly** recommended that this workspace be bound to a Kubernetes `Secret`. This workspace is mutually exclusive with the `roxctl-config` workspace.
 
 ## Usage
@@ -132,5 +134,3 @@ The task configuration in that case should provide the `rox-api-token-auth` work
 
 * Skipping TLS Verify is currently required. TLS trust bundle not working for quay.io etc.
 * If the namespace value is not found in the deployment manifest any RHACS policies which are scoped to specific namespaces will not be matched.
-
-* Version of roxctl should maintain compatibility with Central API. Maximum allowable version drift is unknown.

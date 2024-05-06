@@ -23,7 +23,7 @@ spec:
   params:
     - name: rox_image
       description: Image providing the roxctl tool.
-      default: 'quay.io/stackrox-io/roxctl:4.4.x-376-g3a3364f8d6'
+      default: 'quay.io/stackrox-io/roxctl:4.4.2'
     - name: rox_central_endpoint
       description: The address:port tuple for RHACS Stackrox Central.
       type: string

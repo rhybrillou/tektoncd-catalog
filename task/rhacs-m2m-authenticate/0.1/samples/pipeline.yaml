@@ -36,7 +36,7 @@ spec:
     - name: rox_image
       type: string
       description: The Red Hat Advanced Cluster Security container image
-      default: quay.io/stackrox-io/roxctl:4.4.x-496-g60accbcf23
+      default: quay.io/stackrox-io/roxctl:4.4.2
 
   tasks:
     - name: rhacs-authenticate
