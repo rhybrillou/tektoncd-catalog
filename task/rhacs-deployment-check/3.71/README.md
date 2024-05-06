@@ -51,7 +51,7 @@ If the deployment violates one or more enforced policies, this task will return 
 
 ### Configure using machine to machine authentication
 
-Check the [documentation](https://docs.openshift.com/acs/operating/manage-user-access/configure-short-lived-access.html#configure-short-lived-access_configure-short-lived-access) to configure the trust with the OIDC token issuer. This [example](../../rhacs-m2m-authenticate/0.1/samples/configure-m2m.md) describe a possible RHACS machine-to-machine integration configuration.
+Check the [documentation](https://docs.openshift.com/acs/operating/manage-user-access/configure-short-lived-access.html#configure-short-lived-access_configure-short-lived-access) to configure the trust with the OIDC token issuer. This [example](../../rhacs-m2m-authenticate/0.1/samples/configure-m2m.md) describes a possible RHACS machine-to-machine integration configuration.
 
 The token exchange itself is taken care of by the [rhacs-m2m-authenticate](../../rhacs-m2m-authenticate) task.
 

@@ -1,6 +1,6 @@
-Configure RHACS Central to trust the OIDC ID tokens
+## Configure RHACS Central to trust the OIDC ID tokens
 
-The first step is to configure RHACS tp trust tokens issued by the OIDC provider and mapping claims to specific roles within Central.
+The first step is to configure RHACS to trust tokens issued by the OIDC provider and mapping claims to specific roles within Central.
 
 Here is a sample configuration for a GCP cluster:
 
@@ -31,4 +31,4 @@ Looking in deeper details at the fields of this configuration:
 - `"tokenExpirationDuration": "5m"` : The issued tokens will be valid for a duration of 5 minutes.
 - each entry in the `"mappings"` section is a matching rule applied to the presented OIDC token, mapping token claim key-value pairs with RHACS roles. Here, when the ID token received by Central has `system:serviceaccount:default:build-bot` as subject, the issued token will have the `Continuous Integration` role.
 
-The `mappings` section can do more advanced JWT token field to RHACS role mapping. See the [Documentation](https://docs.openshift.com/acs/4.4/operating/manage-user-access/configure-short-lived-access.html#configure-short-lived-access_configure-short-lived-access) for more details.
+The `mappings` section can do more advanced JWT token field to RHACS role mapping. See the [documentation](https://docs.openshift.com/acs/4.4/operating/manage-user-access/configure-short-lived-access.html#configure-short-lived-access_configure-short-lived-access) for more details.
