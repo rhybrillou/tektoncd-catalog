@@ -32,7 +32,7 @@ kubectl apply -f https://api.hub.tekton.dev/v1/resource/tekton/task/rhacs-m2m-au
 ## Usage
 
 
-Check the [documentation](https://docs.openshift.com/acs/operating/manage-user-access/configure-short-lived-access.html#configure-short-lived-access_configure-short-lived-access) to configure the trust with the OIDC token issuer.
+Check the [documentation](https://docs.openshift.com/acs/operating/manage-user-access/configure-short-lived-access.html#configure-short-lived-access_configure-short-lived-access) to configure the trust with the OIDC token issuer. This [example](samples/configure-m2m.md) describe a possible RHACS machine-to-machine integration configuration.
 
 This task performs the token exchange itself.
 
