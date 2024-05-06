@@ -1,6 +1,8 @@
 # Red Hat Advanced Cluster Security Deployment Check Task
 
-Exchanges a service account token against a short-lived authorization token to configure a pipeline run using `roxctl`.
+Exchanges a service account token against a short-lived RHACS authorization token to configure a pipeline run using `roxctl`.
+
+**Note: this Task requires a 4.4.2 roxctl image (task default) or a more recent image version.**
 
 ## Prerequisites
 
@@ -20,6 +22,8 @@ kubectl apply -f https://api.hub.tekton.dev/v1/resource/tekton/task/rhacs-m2m-au
 - **`insecure-skip-tls-verify`**: Skip verification the TLS certs of the Central endpoint and registry. Examples: _"true", **"false"**_.
 - **`rox_config_dir`**: Path to the roxctl config directory within the `roxctl-config` workspace (if machine to machine authentication is used). The path should be prefixed with `/roxctl-config`. Examples: _"/roxctl-config", **""**_.
 - `rox_image`: The image providing the roxctl tool (optional). Default: quay.io/stackrox-io/roxctl:4.4.2 (this is also the minimum version working with this task). 
+- `output_file`: path to a file where to redirect roxctl standard output. Default: "" (redirects to stdout).
+- `error_file`: path to a file where to redirect roxctl standard error. Default: "" (redirects to stderr).
 
 ## Workspaces
 
@@ -62,5 +66,3 @@ The task configuration in that case should provide the `roxctl-config` workspace
 # Known Issues
 
 * Skipping TLS Verify is currently required.
-
-* Version of roxctl should maintain compatibility with Central API. Maximum allowable version drift is unknown.
