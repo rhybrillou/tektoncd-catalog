@@ -68,3 +68,5 @@ kubectl create secret generic rox-central-endpoint \
 
   {"level":"fatal","ts":1659318163.069173,"caller":"entrypoint/entrypointer.go:188","msg":"Error while handling results: Termination message is above max allowed size 4096, caused by large task result.","stacktrace":"github.com/tektoncd/pipeline/pkg/entrypoint.Entrypointer.Go\n\t/opt/app-root/src/go/src/github.com/tektoncd/pipeline/pkg/entrypoint/entrypointer.go:188\nmain.main\n\t/opt/app-root/src/go/src/github.com/tektoncd/pipeline/cmd/entrypoint/main.go:154\nruntime.main\n\t/usr/lib/golang/src/runtime/proc.go:225"}
   ```
+
+* Version of roxctl should maintain compatibility with Central API. Maximum allowable version drift is unknown.
