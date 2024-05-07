@@ -40,7 +40,7 @@ spec:
       default: '$(params.IMAGE)'
     - name: output_format
       type: string
-      description: Results output format (json | csv | table).
+      description: Results output format (json | csv | table)
       default: json
     - name: insecure-skip-tls-verify
       type: string
@@ -49,8 +49,6 @@ spec:
 
         When set to "true", skip verifying the TLS certs of the Central endpoint and registry.
       default: "false"
-  stepTemplate:
-    env:
   steps:
     - name: rox-image-scan
       image: $(params.rox_image)
@@ -71,8 +69,8 @@ spec:
         - name: ROX_CENTRAL_ENDPOINT
           valueFrom:
             secretKeyRef:
-              key: rox_central_endpoint
               name: $(params.rox_central_endpoint)
+              key: rox_central_endpoint
       args:
         - image
         - scan
